@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400&family=Barlow:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background: #07070a;
+  color: #f0f0f8;
+  font-family: 'Barlow', sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+@layer utilities {
+  .font-display {
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .animate-delay-1 { animation-delay: 0.06s; }
+  .animate-delay-2 { animation-delay: 0.12s; }
+  .animate-delay-3 { animation-delay: 0.18s; }
+  .animate-delay-4 { animation-delay: 0.24s; }
+  .animate-delay-5 { animation-delay: 0.30s; }
+  .animate-delay-6 { animation-delay: 0.36s; }
+  .animate-delay-7 { animation-delay: 0.42s; }
+  .animate-delay-8 { animation-delay: 0.48s; }
+}
