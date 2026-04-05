@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find My AFL Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,400;1,900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070a;--card:#111116;--card2:#1a1a22;--border:#222230;
+  --accent:#F2C94C;--accent2:#e8b800;--dim:#6b6b80;--sub:#9999b0;--txt:#f0f0f8;
+  --font-display:'Barlow Condensed',sans-serif;--font-body:'Barlow',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--font-body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.6}}
+.anim-fade-up{animation:fadeUp .4s ease both}
+.anim-fade-in{animation:fadeIn .35s ease both}
+.anim-scale-in{animation:scaleIn .4s cubic-bezier(.34,1.56,.64,1) both}
+
+/* Layout */
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* ── Landing ── */
+.landing{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;
+  background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(242,201,76,.08) 0%,transparent 70%)}
+.landing h1{font-family:var(--font-display);font-weight:900;font-style:italic;line-height:.9;letter-spacing:-2px;margin-bottom:16px;
+  font-size:clamp(52px,11vw,104px)}
+.landing h1 span{color:var(--accent)}
+.landing .tagline{font-size:clamp(15px,2vw,18px);color:var(--sub);max-width:420px;line-height:1.6;margin-bottom:40px}
+.btn-start{padding:16px 40px;background:var(--accent);color:var(--bg);font-family:var(--font-display);font-weight:700;
+  font-size:22px;text-transform:uppercase;letter-spacing:1px;border:none;border-radius:6px;cursor:pointer;
+  transition:all .2s}
+.btn-start:hover{background:#ffe066;transform:translateY(-2px);box-shadow:0 8px 30px rgba(242,201,76,.28)}
+.btn-start:active{transform:translateY(0)}
+.team-dots{margin-top:56px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:560px;opacity:.35}
+.team-dots .dot{width:12px;height:12px;border-radius:50%}
+.landing .footer-note{margin-top:24px;font-size:12px;color:var(--dim)}
+
+/* ── Pathway ── */
+.pathway-screen{padding:32px 16px;max-width:900px;margin:0 auto;width:100%}
+.pathway-screen h2{font-family:var(--font-display);font-weight:900;font-style:italic;letter-spacing:-.5px;line-height:1;
+  margin-bottom:8px;font-size:clamp(28px,5vw,44px)}
+.pathway-screen h2 span{color:var(--accent)}
+.pathway-screen .subtitle{color:var(--sub);font-size:15px;margin-bottom:28px}
+.pathway-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:640px){.pathway-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:900px){.pathway-grid{grid-template-columns:repeat(4,1fr)}}
+.pw-card{text-align:left;padding:20px;background:var(--card);border:1px solid var(--border);border-radius:12px;
+  cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:8px}
+.pw-card:hover{background:var(--card2);border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 30px rgba(242,201,76,.08)}
+@media(hover:none){.pw-card:hover{transform:none;box-shadow:none}}
+.pw-card:active{background:var(--card2);border-color:var(--accent)}
+.pw-card .emoji{font-size:28px;line-height:1}
+.pw-card .pw-label{font-family:var(--font-display);font-weight:700;font-size:17px;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--txt);transition:color .2s}
+.pw-card:hover .pw-label{color:var(--accent)}
+.pw-card .pw-desc{font-size:12px;color:var(--dim);line-height:1.4}
+
+/* ── Question ── */
+.question-screen{padding:24px 16px;max-width:900px;margin:0 auto;width:100%}
+.q-layout{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+@media(min-width:768px){.q-layout{grid-template-columns:260px 1fr}}
+
+/* Sidebar */
+.sidebar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:sticky;top:16px}
+.sidebar-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);font-weight:600;margin-bottom:12px}
+.sidebar-row{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-bottom:1px solid var(--border)}
+.sidebar-row .sr-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim)}
+.sidebar-row .sr-value{font-size:13px;font-weight:600;color:var(--txt);line-height:1.4}
+.remaining-badge{margin-top:12px;padding:12px;background:rgba(242,201,76,.06);border:1px solid rgba(242,201,76,.15);
+  border-radius:8px;text-align:center}
+.remaining-badge .rb-num{font-family:var(--font-display);font-weight:900;color:var(--accent);font-size:30px;line-height:1}
+.remaining-badge .rb-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--sub);margin-top:4px}
+.progress-bar{margin-top:12px;height:3px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .5s ease-out}
+
+/* Question card */
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+.q-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.q-nav button{padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--dim);
+  font-size:13px;cursor:pointer;transition:all .15s;font-family:var(--font-body)}
+.q-nav button:hover{border-color:var(--sub);color:var(--txt)}
+.q-nav .spacer{flex:1}
+.pivot-msg{margin-bottom:16px;padding:10px 16px;background:rgba(242,201,76,.05);border-left:3px solid var(--accent);
+  border-radius:0 4px 4px 0;font-size:13px;color:var(--sub);font-style:italic}
+.q-number{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-weight:600;margin-bottom:8px}
+.q-label{font-family:var(--font-display);font-weight:700;font-size:clamp(22px,4vw,30px);line-height:1.15;margin-bottom:8px}
+.q-desc{font-size:14px;color:var(--sub);line-height:1.5;margin-bottom:24px}
+
+/* Answer grid */
+.answer-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.answer-grid.two-col{grid-template-columns:1fr}
+@media(min-width:480px){.answer-grid.two-col{grid-template-columns:1fr 1fr}}
+.ans-btn{text-align:left;padding:12px 16px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:4px;font-family:var(--font-body);width:100%;overflow-wrap:break-word;word-break:break-word}
+.ans-btn:hover{background:rgba(242,201,76,.06);border-color:rgba(242,201,76,.45);transform:translateX(3px)}
+@media(hover:none){.ans-btn:hover{transform:none}}
+.ans-btn:active{transform:translateX(1px);background:rgba(242,201,76,.06);border-color:rgba(242,201,76,.45)}
+.ans-btn .ans-label{font-size:15px;font-weight:600;color:var(--txt);transition:color .15s;line-height:1.3}
+.ans-btn:hover .ans-label{color:#fff}
+.ans-btn .ans-sub{font-size:12px;color:var(--dim);line-height:1.3}
+
+/* ── Result ── */
+.result-screen{padding:32px 16px;max-width:680px;margin:0 auto;width:100%}
+.result-pre{font-size:13px;text-transform:uppercase;letter-spacing:3px;color:var(--dim);margin-bottom:16px}
+.winner-hero{border-radius:12px;overflow:hidden;margin-bottom:20px;padding:28px;display:flex;align-items:flex-start;gap:20px;overflow-wrap:break-word;word-break:break-word}
+.team-badge{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:900;
+  color:#fff;letter-spacing:-.5px;border-radius:14%}
+.winner-info{flex:1;min-width:0;overflow:hidden}
+.winner-info h1{font-family:var(--font-display);font-weight:900;font-style:italic;font-size:clamp(26px,6vw,52px);line-height:1;letter-spacing:-.5px;overflow-wrap:break-word}
+.winner-info .nickname{font-size:clamp(10px,2.5vw,13px);text-transform:uppercase;letter-spacing:clamp(1px,0.5vw,3px);margin-top:4px;opacity:.75}
+.winner-info .summary{font-size:14px;opacity:.8;margin-top:12px;line-height:1.5}
+
+.why-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.why-card .why-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);font-weight:600;margin-bottom:16px}
+.why-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.why-row:last-child{border-bottom:none}
+.why-row .arrow{color:var(--accent);font-size:14px;margin-top:2px;flex-shrink:0}
+.why-row .bullet{font-size:14px;color:var(--sub);line-height:1.5;overflow-wrap:break-word;word-break:break-word;min-width:0}
+.relaxed-row{display:flex;gap:12px;padding:10px 0;margin-top:4px}
+.relaxed-row .tilde{color:rgba(255,200,100,.6);font-size:14px;margin-top:2px;flex-shrink:0}
+.relaxed-row .relaxed-text{font-size:13px;font-style:italic;color:rgba(255,200,100,.65);line-height:1.5}
+
+.runner-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;
+  display:flex;align-items:center;gap:16px}
+.runner-info{flex:1;min-width:0}
+.runner-info .ru-tag{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:4px}
+.runner-info .ru-name{font-family:var(--font-display);font-weight:700;font-style:italic;font-size:18px;color:var(--txt);overflow-wrap:break-word}
+.runner-info .ru-diff{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.4}
+
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.cta-row button{flex:1;min-width:140px;padding:14px;font-family:var(--font-display);font-weight:700;font-size:18px;text-transform:uppercase;
+  letter-spacing:1px;border-radius:6px;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg);border:none}
+.btn-primary:hover{background:#ffe066;transform:translateY(-1px)}
+.btn-secondary{background:transparent;color:var(--sub);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--sub);color:var(--txt)}
+
+/* ── Mobile responsiveness ── */
+@media(max-width:767px){
+  .sidebar{position:static;order:-1}
+  .sidebar-answers{display:none}
+  .sidebar{padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .sidebar-title{margin-bottom:0;width:100%}
+  #sidebarPathway{flex:1;min-width:120px;padding:8px 0;border-bottom:none}
+  .remaining-badge{margin-top:0;padding:8px 16px;flex:0 0 auto;display:flex;align-items:center;gap:8px}
+  .remaining-badge .rb-num{font-size:22px}
+  .remaining-badge .rb-label{margin-top:0}
+  .progress-bar{width:100%;margin-top:4px}
+  .winner-hero{padding:20px;gap:14px;flex-wrap:wrap}
+  .q-card{padding:16px}
+  .q-desc{margin-bottom:16px}
+  .result-screen{padding:20px 12px}
+  .runner-card{padding:12px;gap:12px}
+  .why-card{padding:16px}
+}
+@media(max-width:380px){
+  .pathway-grid{grid-template-columns:1fr}
+  .landing h1{letter-spacing:-1px}
+  .btn-start{padding:14px 28px;font-size:19px}
+  .winner-hero{padding:16px;gap:12px}
+  .cta-row{flex-direction:column}
+  .cta-row button{min-width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- Landing -->
+<div id="landing" class="screen active">
+  <div class="landing">
+    <h1 class="anim-fade-up">FIND MY<br><span>AFL TEAM</span></h1>
+    <p class="tagline anim-fade-up" style="animation-delay:.15s">Answer a few smart questions. Get your one team.<br>Pure logic — no randomness.</p>
+    <button class="btn-start anim-fade-up" style="animation-delay:.25s" onclick="showPathway()">Start the selector →</button>
+    <div id="teamDots" class="team-dots anim-fade-up" style="animation-delay:.45s"></div>
+    <p class="footer-note anim-fade-up" style="animation-delay:.55s">All 18 AFL clubs · Deterministic rules · Works offline</p>
+  </div>
+</div>
+
+<!-- Pathway -->
+<div id="pathway" class="screen">
+  <div class="pathway-screen anim-fade-in">
+    <h2>How do you want to <span>start?</span></h2>
+    <p class="subtitle">Pick a starting pathway — the selector adapts from there.</p>
+    <div id="pathwayGrid" class="pathway-grid"></div>
+  </div>
+</div>
+
+<!-- Question -->
+<div id="question" class="screen">
+  <div class="question-screen">
+    <div class="q-layout">
+      <div class="sidebar">
+        <p class="sidebar-title">Your choices</p>
+        <div id="sidebarPathway" class="sidebar-row"></div>
+        <div id="sidebarAnswers" class="sidebar-answers"></div>
+        <div class="remaining-badge">
+          <div id="remainCount" class="rb-num">18</div>
+          <div id="remainLabel" class="rb-label">Clubs in play</div>
+        </div>
+        <div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="qCard" class="q-card anim-scale-in"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Result -->
+<div id="result" class="screen">
+  <div class="result-screen anim-fade-in">
+    <p class="result-pre anim-fade-up">Your AFL team is</p>
+    <div id="resultContent"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA: TEAMS
+// ═══════════════════════════════════════════════
+const TEAMS=[
+{id:'adelaide',name:'Adelaide Crows',nickname:'Crows',state:'SA',region:'Adelaide',cityType:'metro',coloursPrimary:['navy','red'],coloursSecondary:['gold'],identityType:'animal',mascotClass:'crow',mascotLabel:'Crow',brandStyle:'traditional',fanbaseSize:'large',successTier:'medium',recentPremiership:false,recentSuccessLabel:"Reached the 2017 Grand Final but haven't claimed the ultimate prize yet",homeGroundType:'interstate_fortress',stadiumVibe:['fortress','loud','passionate'],cultureTags:['loyal','passionate','proud','community'],summary:'A proud South Australian club with navy, red and gold colours and a fierce crow mascot — loyal, passionate and always fighting.',uiColors:['#002B5C','#E21937'],initials:'AC'},
+{id:'brisbane',name:'Brisbane Lions',nickname:'Lions',state:'QLD',region:'Brisbane',cityType:'metro',coloursPrimary:['maroon','gold'],coloursSecondary:['navy'],identityType:'animal',mascotClass:'lion',mascotLabel:'Lion',brandStyle:'modern',fanbaseSize:'large',successTier:'high',recentPremiership:true,recentSuccessLabel:'Back-to-back premiership champions 2023–2024',homeGroundType:'interstate_fortress',stadiumVibe:['fortress','loud','passionate'],cultureTags:['loyal','proud','successful','rising'],summary:"Queensland's maroon and gold powerhouse with a lion's roar and recent back-to-back premierships.",uiColors:['#830E26','#EBB13D'],initials:'BL'},
+{id:'carlton',name:'Carlton Blues',nickname:'Blues',state:'VIC',region:'Carlton, Melbourne',cityType:'metro',coloursPrimary:['navy'],coloursSecondary:['white'],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'Blues',brandStyle:'traditional',fanbaseSize:'giant',successTier:'medium',recentPremiership:false,recentSuccessLabel:"A historically great club that hasn't won since 1995 — the wait goes on",homeGroundType:'mcg',stadiumVibe:['mcg','big-game','tribal'],cultureTags:['loyal','long-suffering','tribal','proud'],summary:"Melbourne's iconic navy-and-white club with one of the AFL's biggest fanbases — steeped in history, hungry for a premiership.",uiColors:['#0E1E2C','#3a6bc7'],initials:'CFC'},
+{id:'collingwood',name:'Collingwood Magpies',nickname:'Magpies',state:'VIC',region:'Collingwood, Melbourne',cityType:'metro',coloursPrimary:['black','white'],coloursSecondary:[],identityType:'animal',mascotClass:'magpie',mascotLabel:'Magpie',brandStyle:'traditional',fanbaseSize:'giant',successTier:'high',recentPremiership:true,recentSuccessLabel:'2023 Premiers — Collingwood are the most talked-about club in the AFL',homeGroundType:'mcg',stadiumVibe:['mcg','big-game','tribal','loud'],cultureTags:['tribal','passionate','successful','divisive'],summary:'The most polarising club in Australian sport. Black and white, MCG royalty, an enormous tribal fanbase, and recent premiers.',uiColors:['#1a1a1a','#555'],initials:'COLL'},
+{id:'essendon',name:'Essendon Bombers',nickname:'Bombers',state:'VIC',region:'Essendon, Melbourne',cityType:'metro',coloursPrimary:['red','black'],coloursSecondary:[],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'Bombers',brandStyle:'traditional',fanbaseSize:'giant',successTier:'medium',recentPremiership:false,recentSuccessLabel:"Hasn't won since 2000 — a sleeping giant with enormous expectations",homeGroundType:'mcg',stadiumVibe:['mcg','big-game','tribal'],cultureTags:['loyal','long-suffering','tribal','passionate'],summary:'Red and black Melbourne giants. A massive, passionate fanbase that knows the agony of a 25-year wait for a premiership.',uiColors:['#CC2031','#111'],initials:'ESS'},
+{id:'fremantle',name:'Fremantle Dockers',nickname:'Dockers',state:'WA',region:'Fremantle, Perth',cityType:'metro',coloursPrimary:['purple'],coloursSecondary:['white'],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'Dockers',brandStyle:'modern',fanbaseSize:'large',successTier:'medium',recentPremiership:false,recentSuccessLabel:'Consistent finals contender building toward a first premiership',homeGroundType:'interstate_fortress',stadiumVibe:['fortress','coastal','passionate'],cultureTags:['loyal','community','proud','rising'],summary:"Perth's purple and white club with a tight-knit community identity, a passionate home fortress, and plenty of unfinished business.",uiColors:['#2A1A5E','#7B5EA7'],initials:'FRE'},
+{id:'geelong',name:'Geelong Cats',nickname:'Cats',state:'VIC',region:'Geelong',cityType:'regional',coloursPrimary:['navy'],coloursSecondary:['white'],identityType:'animal',mascotClass:'cat',mascotLabel:'Cat',brandStyle:'traditional',fanbaseSize:'large',successTier:'high',recentPremiership:true,recentSuccessLabel:'2022 Premiers — one of the great modern dynasties',homeGroundType:'regional_stronghold',stadiumVibe:['fortress','traditional','loud'],cultureTags:['loyal','successful','community','stable'],summary:"Regional Victoria's navy-and-white powerhouse. Cat mascot, sustained excellence, and a passionate regional community behind them.",uiColors:['#002B5C','#4a7bc7'],initials:'GEE'},
+{id:'goldcoast',name:'Gold Coast SUNS',nickname:'SUNS',state:'QLD',region:'Gold Coast',cityType:'metro',coloursPrimary:['red','gold'],coloursSecondary:[],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'SUNS',brandStyle:'modern',fanbaseSize:'small',successTier:'low',recentPremiership:false,recentSuccessLabel:'A young club still building — the underdog journey is part of the charm',homeGroundType:'interstate_fortress',stadiumVibe:['coastal','relaxed','modern'],cultureTags:['community','rising','underdog'],summary:"Queensland's coastal red-and-gold newcomers — a young, modern club with underdog spirit and sunshine-state energy.",uiColors:['#CC2031','#F4A000'],initials:'GCS'},
+{id:'gws',name:'GWS GIANTS',nickname:'GIANTS',state:'NSW',region:'Greater Western Sydney',cityType:'metro',coloursPrimary:['grey','orange'],coloursSecondary:[],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'GIANTS',brandStyle:'modern',fanbaseSize:'small',successTier:'medium',recentPremiership:false,recentSuccessLabel:'2019 Grand Finalists — a modern force still chasing a first flag',homeGroundType:'interstate_fortress',stadiumVibe:['modern','fortress'],cultureTags:['community','rising','underdog'],summary:"Sydney's western rivals with distinctive charcoal and orange colours. A fast-rising modern identity with a chip on their shoulder.",uiColors:['#2a2a2a','#F15C22'],initials:'GWS'},
+{id:'hawthorn',name:'Hawthorn Hawks',nickname:'Hawks',state:'VIC',region:'Hawthorn, Melbourne',cityType:'metro',coloursPrimary:['brown','gold'],coloursSecondary:[],identityType:'animal',mascotClass:'hawk',mascotLabel:'Hawk',brandStyle:'traditional',fanbaseSize:'large',successTier:'high',recentPremiership:true,recentSuccessLabel:'Four-time premiers of the modern era — a dynasty club',homeGroundType:'mcg',stadiumVibe:['mcg','traditional','proud'],cultureTags:['successful','proud','loyal','stable'],summary:"Melbourne's brown-and-gold dynasty. Hawthorn's multiple back-to-back premierships made them the AFL's most successful modern club.",uiColors:['#4D2004','#C89520'],initials:'HAW'},
+{id:'melbourne',name:'Melbourne Demons',nickname:'Demons',state:'VIC',region:'Melbourne CBD',cityType:'metro',coloursPrimary:['red','navy'],coloursSecondary:[],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'Demons',brandStyle:'traditional',fanbaseSize:'large',successTier:'high',recentPremiership:true,recentSuccessLabel:'2021 Premiers — ending a 57-year premiership drought',homeGroundType:'mcg',stadiumVibe:['mcg','big-game','traditional'],cultureTags:['loyal','long-suffering','successful','proud'],summary:"Melbourne's red-and-navy club with the AFL's oldest history. Long-suffering loyalty rewarded with a 2021 premiership revival.",uiColors:['#CC2031','#002B5C'],initials:'MEL'},
+{id:'northmelbourne',name:'North Melbourne Kangaroos',nickname:'Kangaroos',state:'VIC',region:'North Melbourne',cityType:'metro',coloursPrimary:['blue','white'],coloursSecondary:['red'],identityType:'animal',mascotClass:'kangaroo',mascotLabel:'Kangaroo',brandStyle:'traditional',fanbaseSize:'medium',successTier:'low',recentPremiership:false,recentSuccessLabel:'Two-time 90s premiers now in a rebuilding phase',homeGroundType:'suburban',stadiumVibe:['suburban','community','heartland'],cultureTags:['loyal','long-suffering','community','underdog'],summary:'Blue, white and red with a kangaroo mascot — North Melbourne are the ultimate battlers, loved for their underdog spirit.',uiColors:['#003087','#6688bb'],initials:'NM'},
+{id:'portadelaide',name:'Port Adelaide Power',nickname:'Power',state:'SA',region:'Port Adelaide, Adelaide',cityType:'metro',coloursPrimary:['teal','black'],coloursSecondary:['white'],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'Power',brandStyle:'modern',fanbaseSize:'large',successTier:'medium',recentPremiership:false,recentSuccessLabel:'2004 Premiers — back competing at the top and hungry for more',homeGroundType:'interstate_fortress',stadiumVibe:['fortress','loud','intimidating'],cultureTags:['passionate','tribal','proud','community'],summary:"South Australia's teal-and-black powerhouse. Fierce, modern, and intimidating at home — Port Adelaide are built for big moments.",uiColors:['#006080','#008AAB'],initials:'PORT'},
+{id:'richmond',name:'Richmond Tigers',nickname:'Tigers',state:'VIC',region:'Richmond, Melbourne',cityType:'metro',coloursPrimary:['yellow','black'],coloursSecondary:[],identityType:'animal',mascotClass:'tiger',mascotLabel:'Tiger',brandStyle:'traditional',fanbaseSize:'giant',successTier:'high',recentPremiership:true,recentSuccessLabel:'Three-time premiers 2017, 2019, 2020 — the dominant dynasty of the modern era',homeGroundType:'mcg',stadiumVibe:['mcg','big-game','tribal','loud'],cultureTags:['tribal','passionate','successful','proud'],summary:'Yellow and black MCG kings. Three premierships in four years made Richmond the dominant force in modern AFL.',uiColors:['#1a1600','#C8A800'],initials:'RICH'},
+{id:'stkilda',name:'St Kilda Saints',nickname:'Saints',state:'VIC',region:'St Kilda, Melbourne',cityType:'metro',coloursPrimary:['red','white'],coloursSecondary:['black'],identityType:'symbolic',mascotClass:'symbolic',mascotLabel:'Saints',brandStyle:'traditional',fanbaseSize:'large',successTier:'low',recentPremiership:false,recentSuccessLabel:'One premiership in 1966 — the long wait continues',homeGroundType:'suburban',stadiumVibe:['suburban','community','heartland'],cultureTags:['loyal','long-suffering','community','underdog'],summary:'Red, white and black Melbourne underdogs. Beloved for their community soul and a storied history of near-misses.',uiColors:['#8B0000','#CC2031'],initials:'SKS'},
+{id:'sydney',name:'Sydney Swans',nickname:'Swans',state:'NSW',region:'Sydney CBD',cityType:'metro',coloursPrimary:['red','white'],coloursSecondary:[],identityType:'animal',mascotClass:'swan',mascotLabel:'Swan',brandStyle:'modern',fanbaseSize:'large',successTier:'high',recentPremiership:true,recentSuccessLabel:'2024 Premiers — Sydney continue to punch above their weight',homeGroundType:'interstate_fortress',stadiumVibe:['fortress','loud','passionate'],cultureTags:['successful','proud','loyal','community'],summary:"Sydney's red-and-white swans. A proud, successful interstate powerhouse with a growing fanbase and multiple recent premierships.",uiColors:['#8B0000','#CC2031'],initials:'SYD'},
+{id:'westcoast',name:'West Coast Eagles',nickname:'Eagles',state:'WA',region:'Perth',cityType:'metro',coloursPrimary:['blue','gold'],coloursSecondary:[],identityType:'animal',mascotClass:'eagle',mascotLabel:'Eagle',brandStyle:'traditional',fanbaseSize:'large',successTier:'high',recentPremiership:true,recentSuccessLabel:'2018 Premiers — WA icons with a passionate home fortress',homeGroundType:'interstate_fortress',stadiumVibe:['fortress','loud','passionate'],cultureTags:['successful','loyal','proud','tribal'],summary:"Perth's blue-and-gold eagles. Proud WA icons with multiple premierships and one of the most imposing home-ground advantages.",uiColors:['#003087','#C89520'],initials:'WCE'},
+{id:'westernbulldogs',name:'Western Bulldogs',nickname:'Bulldogs',state:'VIC',region:'Footscray, Melbourne',cityType:'metro',coloursPrimary:['red','white','blue'],coloursSecondary:[],identityType:'animal',mascotClass:'dog',mascotLabel:'Bulldog',brandStyle:'modern',fanbaseSize:'medium',successTier:'medium',recentPremiership:true,recentSuccessLabel:'2016 Premiers — one of the great underdog premiership stories',homeGroundType:'suburban',stadiumVibe:['suburban','community','heartland'],cultureTags:['community','loyal','passionate','underdog'],summary:"Melbourne's red, white and blue underdogs. Bulldog spirit, tight community soul, and a famous 2016 premiership against the odds.",uiColors:['#7B0028','#003087'],initials:'WBD'}
+];
+
+// ═══════════════════════════════════════════════
+// DATA: FACTOR MAPS
+// ═══════════════════════════════════════════════
+const COLOUR_PRIMARY_MAP={
+  navy:['adelaide','brisbane','carlton','geelong','melbourne','northmelbourne','westcoast'],
+  blue:['carlton','geelong','northmelbourne','westcoast','westernbulldogs'],
+  red:['adelaide','essendon','goldcoast','melbourne','northmelbourne','stkilda','sydney','westernbulldogs'],
+  black:['collingwood','essendon','portadelaide','richmond','stkilda'],
+  gold:['adelaide','brisbane','goldcoast','hawthorn','richmond','westcoast'],
+  yellow:['hawthorn','richmond','westcoast'],
+  white:['carlton','collingwood','fremantle','geelong','northmelbourne','portadelaide','stkilda','sydney','westernbulldogs'],
+  purple:['fremantle'],brown:['hawthorn'],teal:['fremantle','portadelaide'],orange:['gws'],maroon:['brisbane'],grey:['gws']
+};
+const COLOUR_SECONDARY_MAP={
+  white:['carlton','collingwood','fremantle','geelong','northmelbourne','portadelaide','stkilda','sydney','westernbulldogs'],
+  gold:['adelaide','brisbane','hawthorn','westcoast'],yellow:['hawthorn','richmond','westcoast'],
+  black:['collingwood','essendon','portadelaide','richmond','stkilda'],
+  red:['adelaide','essendon','goldcoast','melbourne','stkilda','westernbulldogs'],
+  navy:['brisbane','geelong','melbourne'],blue:['northmelbourne','westernbulldogs']
+};
+const STATE_MAP={
+  VIC:['carlton','collingwood','essendon','geelong','hawthorn','melbourne','northmelbourne','richmond','stkilda','westernbulldogs'],
+  SA:['adelaide','portadelaide'],WA:['fremantle','westcoast'],QLD:['brisbane','goldcoast'],NSW:['gws','sydney']
+};
+const MASCOT_CLASS_MAP={
+  crow:['adelaide'],magpie:['collingwood'],hawk:['hawthorn'],swan:['sydney'],eagle:['westcoast'],
+  cat:['geelong'],tiger:['richmond'],lion:['brisbane'],kangaroo:['northmelbourne'],dog:['westernbulldogs']
+};
+const MASCOT_EMOJI={crow:'🐦',magpie:'🐦‍⬛',hawk:'🦅',swan:'🦢',eagle:'🦅',cat:'🐱',tiger:'🐯',lion:'🦁',kangaroo:'🦘',dog:'🐶',symbolic:'⚡'};
+const MASCOT_LABELS={crow:'Crow',magpie:'Magpie',hawk:'Hawk',swan:'Swan',eagle:'Eagle',cat:'Cat',tiger:'Tiger',lion:'Lion',kangaroo:'Kangaroo',dog:'Bulldog'};
+const CULTURE_VIBE_MAP={
+  tribal:['carlton','collingwood','essendon','portadelaide','richmond','westcoast'],
+  'long-suffering':['carlton','essendon','melbourne','northmelbourne','stkilda'],
+  community:['adelaide','fremantle','geelong','goldcoast','gws','northmelbourne','stkilda','sydney','westernbulldogs'],
+  successful:['brisbane','collingwood','geelong','hawthorn','melbourne','richmond','sydney','westcoast'],
+  rising:['brisbane','fremantle','goldcoast','gws'],
+  underdog:['goldcoast','gws','northmelbourne','stkilda','westernbulldogs'],
+  passionate:['adelaide','collingwood','essendon','portadelaide','richmond','sydney']
+};
+
+// ═══════════════════════════════════════════════
+// DATA: QUESTIONS
+// ═══════════════════════════════════════════════
+function safe(teams,filtered){return filtered.length>0?filtered:teams}
+function filterByMap(teams,map,key){const ids=map[key]||[];return safe(teams,teams.filter(t=>ids.includes(t.id)))}
+
+const QUESTIONS=[
+  {id:'colour_primary',pathway:'colours',label:"What's your favourite colour?",description:'Pick the colour you feel most drawn to in a sports kit.',shortLabel:'Fav colour',
+    options:[{value:'blue',label:'🔵  Blue / Navy'},{value:'red',label:'🔴  Red'},{value:'black',label:'⚫  Black'},{value:'gold',label:'🟡  Gold / Yellow'},{value:'white',label:'⚪  White'},{value:'purple',label:'🟣  Purple'},{value:'brown',label:'🟤  Brown'},{value:'teal',label:'🩵  Teal'},{value:'orange',label:'🟠  Orange'},{value:'maroon',label:'🍷  Maroon'}],
+    priority:10,tieBreakerStrength:8,filter:(teams,v)=>filterByMap(teams,COLOUR_PRIMARY_MAP,v)},
+  {id:'colour_secondary',pathway:'colours',label:'Any second favourite colour?',description:'A second colour often seals the deal.',shortLabel:'Second colour',
+    options:[{value:'white',label:'⚪  White'},{value:'gold',label:'🟡  Gold / Yellow'},{value:'black',label:'⚫  Black'},{value:'red',label:'🔴  Red'},{value:'navy',label:'🔵  Navy / Blue'},{value:'none',label:'🤷  No preference'}],
+    priority:9,tieBreakerStrength:7,filter:(teams,v)=>v==='none'?teams:filterByMap(teams,COLOUR_SECONDARY_MAP,v)},
+  {id:'mascot_type',pathway:'mascot',label:'What kind of identity appeals to you?',description:'Some teams have animal mascots; others have symbolic or power-based identities.',shortLabel:'Identity type',
+    options:[{value:'animal',label:'🦅  An animal mascot',subtitle:'Eagles, Tigers, Cats, Dogs and more'},{value:'symbolic',label:'⚡  A symbolic identity',subtitle:'Blues, Bombers, SUNS, Power and more'}],
+    priority:9,tieBreakerStrength:8,filter:(teams,v)=>safe(teams,teams.filter(t=>t.identityType===v))},
+  {id:'mascot_animal_class',pathway:'mascot',label:'Which animal resonates most?',description:'Pick the animal identity that feels most like you.',shortLabel:'Animal mascot',
+    options:[],isDynamic:true,
+    appliesWhen:ans=>ans.some(a=>a.questionId==='mascot_type'&&a.answer==='animal'),
+    getDynamicOptions:teams=>{const classes=[...new Set(teams.filter(t=>t.identityType==='animal').map(t=>t.mascotClass))];
+      return classes.map(c=>({value:c,label:`${MASCOT_EMOJI[c]||''}  ${MASCOT_LABELS[c]||c}`,subtitle:teams.filter(t=>t.mascotClass===c).map(t=>t.name).join(' / ')}))},
+    priority:8,tieBreakerStrength:9,filter:(teams,v)=>filterByMap(teams,MASCOT_CLASS_MAP,v)},
+  {id:'geo_state',pathway:'geography',label:'Do you have a connection to a particular state?',description:'Where you live — or love — can define your AFL allegiance.',shortLabel:'State',
+    options:[{value:'VIC',label:'🏙️  Victoria',subtitle:'10 clubs'},{value:'SA',label:'🌾  South Australia',subtitle:'Adelaide Crows & Port Adelaide'},{value:'WA',label:'🌊  Western Australia',subtitle:'Fremantle & West Coast'},{value:'QLD',label:'☀️  Queensland',subtitle:'Brisbane Lions & Gold Coast SUNS'},{value:'NSW',label:'🌉  New South Wales',subtitle:'Sydney Swans & GWS GIANTS'},{value:'none',label:'🌏  No preference'}],
+    priority:9,tieBreakerStrength:7,filter:(teams,v)=>v==='none'?teams:filterByMap(teams,STATE_MAP,v)},
+  {id:'geo_vic_type',pathway:'geography',label:'Melbourne metro or regional Victoria?',description:'Victoria has ten clubs — from inner-Melbourne powerhouses to the regional Geelong side.',shortLabel:'VIC type',
+    options:[{value:'metro',label:'🏙️  Melbourne inner-city clubs'},{value:'regional',label:'🏘️  Regional Victoria (Geelong)'},{value:'none',label:'🤷  No preference'}],
+    priority:7,tieBreakerStrength:6,appliesWhen:ans=>ans.some(a=>a.questionId==='geo_state'&&a.answer==='VIC'),
+    filter:(teams,v)=>v==='none'?teams:safe(teams,teams.filter(t=>t.cityType===v))},
+  {id:'success_appetite',pathway:'success',label:'What kind of success story appeals to you?',description:"Your relationship with winning reveals a lot about which club suits you.",shortLabel:'Success appetite',
+    options:[{value:'high',label:'🏆  Genuine premiership contender',subtitle:'I want to celebrate'},{value:'medium',label:'📈  Competitive and building',subtitle:'Consistent finals football'},{value:'low',label:'💪  True underdog — I\'ll suffer',subtitle:'Pain is part of the journey'},{value:'any',label:'🤷  It doesn\'t matter to me'}],
+    priority:9,tieBreakerStrength:7,filter:(teams,v)=>v==='any'?teams:safe(teams,teams.filter(t=>t.successTier===v))},
+  {id:'success_recent',pathway:'success',label:'Does recent premiership success matter?',description:'Some fans need a team with a flag in living memory.',shortLabel:'Recent premiership',
+    options:[{value:'yes',label:'✅  Yes — I want recent winners'},{value:'no',label:'📖  No — history and legacy are enough'},{value:'any',label:'🤷  Doesn\'t matter'}],
+    priority:7,tieBreakerStrength:6,filter:(teams,v)=>v!=='yes'?teams:safe(teams,teams.filter(t=>t.recentPremiership))},
+  {id:'culture_size',pathway:'culture',label:'What size fanbase do you want to join?',description:"The scale and feel of a club's following shapes the whole experience.",shortLabel:'Fanbase size',
+    options:[{value:'massive',label:'🌍  Massive — millions worldwide',subtitle:'Carlton, Essendon, Collingwood, Richmond'},{value:'large',label:'👥  Large — big passionate following',subtitle:'Adelaide, Brisbane, Geelong, Sydney…'},{value:'community',label:'🏘️  Community-sized — tight and proud',subtitle:'Bulldogs, North Melbourne, GWS, Gold Coast…'},{value:'any',label:'🤷  I don\'t mind'}],
+    priority:8,tieBreakerStrength:6,filter:(teams,v)=>{
+      if(v==='any')return teams;const ck={massive:t=>t.fanbaseSize==='giant',large:t=>t.fanbaseSize==='giant'||t.fanbaseSize==='large',community:t=>t.fanbaseSize==='medium'||t.fanbaseSize==='small'};
+      return safe(teams,teams.filter(ck[v]||(()=>true)))}},
+  {id:'culture_vibe',pathway:'culture',label:'What culture vibe are you after?',description:'Different clubs carry very different energy.',shortLabel:'Culture vibe',
+    options:[{value:'tribal',label:'🔥  Loud, tribal and intense'},{value:'long-suffering',label:'😤  Loyal and long-suffering'},{value:'community',label:'❤️  Family-friendly and community-driven'},{value:'successful',label:'🏅  Winners — regular celebration'},{value:'underdog',label:'🐶  Underdog — I love the battlers'}],
+    priority:7,tieBreakerStrength:7,filter:(teams,v)=>filterByMap(teams,CULTURE_VIBE_MAP,v)},
+  {id:'brand_style',pathway:'tradition',label:'Traditional heritage or modern identity?',description:'Some clubs date back to the 1800s. Others are fresh, modern brands.',shortLabel:'Brand style',
+    options:[{value:'traditional',label:'🏛️  Heritage and tradition',subtitle:'Carlton, Essendon, Hawthorn, Geelong…'},{value:'modern',label:'⚡  Modern and forward-thinking',subtitle:'Brisbane, Fremantle, Gold Coast, GWS…'},{value:'none',label:'🤷  No preference'}],
+    priority:8,tieBreakerStrength:6,filter:(teams,v)=>v==='none'?teams:safe(teams,teams.filter(t=>t.brandStyle===v))},
+  {id:'stadium_vibe',pathway:'stadium',label:"What's your ideal game-day atmosphere?",description:'AFL grounds range from the enormous MCG to intimate suburban ovals.',shortLabel:'Stadium vibe',
+    options:[{value:'mcg',label:'🏟️  MCG big-game energy',subtitle:'90,000 fans, the greatest ground on earth'},{value:'suburban',label:'🏘️  Suburban heartland',subtitle:'Local, gritty, unpretentious'},{value:'fortress',label:'✈️  Interstate fortress',subtitle:'Opponents dread visiting'},{value:'coastal',label:'🌊  Coastal and relaxed',subtitle:"Gold Coast's easy-going vibe"},{value:'none',label:'🤷  No preference'}],
+    priority:7,tieBreakerStrength:6,filter:(teams,v)=>{
+      if(v==='none')return teams;if(v==='mcg')return safe(teams,teams.filter(t=>t.homeGroundType==='mcg'));
+      if(v==='suburban')return safe(teams,teams.filter(t=>t.homeGroundType==='suburban'));return safe(teams,teams.filter(t=>t.stadiumVibe.includes(v)))}},
+  {id:'social_influence',pathway:'social',label:'Do close family or friends already support an AFL team?',description:'Social connection can be a powerful tie-breaker.',shortLabel:'Social',
+    options:[{value:'yes_align',label:"✅  Yes — and I'd love to support the same team"},{value:'yes_different',label:"🔄  Yes — but I want to make my own choice"},{value:'no',label:"🌱  No — I'm starting completely fresh"}],
+    priority:5,tieBreakerStrength:8,filter:teams=>teams},
+  {id:'social_team_pick',pathway:'social',label:"Which team do they support?",description:"If that club is still in the mix, they'll get the deciding edge.",shortLabel:'Social team',
+    options:[],isDynamic:true,appliesWhen:ans=>ans.some(a=>a.questionId==='social_influence'&&a.answer==='yes_align'),
+    getDynamicOptions:teams=>teams.map(t=>({value:t.id,label:t.name,subtitle:t.summary})),
+    priority:4,tieBreakerStrength:9,filter:(teams,v)=>safe(teams,teams.filter(t=>t.id===v))},
+  {id:'final_choice',pathway:'final',label:'It comes down to these two. Which one feels right?',description:'Go with your gut — this is your team.',shortLabel:'Final choice',
+    options:[],isDynamic:true,isHeadToHead:true,
+    getDynamicOptions:teams=>teams.slice(0,2).map(t=>({value:t.id,label:t.name,subtitle:t.summary})),
+    priority:1,tieBreakerStrength:10,filter:(teams,v)=>safe(teams,teams.filter(t=>t.id===v))}
+];
+
+const PATHWAY_FIRST_Q={colours:'colour_primary',mascot:'mascot_type',geography:'geo_state',success:'success_appetite',culture:'culture_size',stadium:'stadium_vibe',tradition:'brand_style',surprise:'success_appetite'};
+
+const PATHWAYS=[
+  {id:'colours',emoji:'🎨',label:'Colours',desc:'Start with your favourite colour'},
+  {id:'mascot',emoji:'🦅',label:'Mascot & Identity',desc:'Find a team that matches your spirit'},
+  {id:'geography',emoji:'📍',label:'State / City',desc:'Support your local heroes'},
+  {id:'success',emoji:'🏆',label:'Success / Trophies',desc:'How much do wins matter?'},
+  {id:'culture',emoji:'📣',label:'Fan Culture',desc:'Find your people in the stands'},
+  {id:'stadium',emoji:'🏟️',label:'Game-Day Vibe',desc:'Pick your ideal atmosphere'},
+  {id:'tradition',emoji:'⚡',label:'Tradition vs Modern',desc:'Heritage club or fresh identity?'},
+  {id:'surprise',emoji:'🎲',label:'Surprise Me',desc:'Let the selector decide'}
+];
+
+// ═══════════════════════════════════════════════
+// ENGINE
+// ═══════════════════════════════════════════════
+function getOptions(q,teams,answers){
+  if(q.isDynamic&&q.getDynamicOptions)return q.getDynamicOptions(teams,answers);return q.options;
+}
+function isApplicable(q,answers){return q.appliesWhen?q.appliesWhen(answers):true}
+function isUseful(q,teams,answers){
+  const opts=getOptions(q,teams,answers);
+  const active=opts.filter(o=>!['none','any','no','no_preference'].includes(o.value));
+  if(!active.length)return false;
+  return active.some(o=>{const f=q.filter(teams,o.value,answers);return f.length>0&&f.length<teams.length});
+}
+function replayFilters(answers){
+  let rem=[...TEAMS];
+  for(const ans of answers){const q=QUESTIONS.find(q=>q.id===ans.questionId);if(!q)continue;const f=q.filter(rem,ans.answer,answers);if(f.length>0)rem=f}
+  return rem;
+}
+function resolveWinner(teams){
+  const tier={high:3,medium:2,low:1},sz={giant:4,large:3,medium:2,small:1};
+  return[...teams].sort((a,b)=>{const td=(tier[b.successTier]||0)-(tier[a.successTier]||0);if(td)return td;if(a.recentPremiership!==b.recentPremiership)return b.recentPremiership?1:-1;return(sz[b.fanbaseSize]||0)-(sz[a.fanbaseSize]||0)});
+}
+
+const RELAXATION_ORDER=['colour_secondary','brand_style','stadium_vibe','geo_vic_type','culture_size','success_recent','culture_vibe','success_appetite','colour_primary','mascot_type','geo_state','mascot_animal_class'];
+function relaxConstraints(answers){
+  for(const qId of RELAXATION_ORDER){
+    const idx=answers.findIndex(a=>a.questionId===qId);if(idx===-1)continue;
+    const relaxed=answers.filter((_,i)=>i!==idx);let rem=[...TEAMS];
+    for(const ans of relaxed){const q=QUESTIONS.find(q=>q.id===ans.questionId);if(!q)continue;const f=q.filter(rem,ans.answer,relaxed);if(f.length>0)rem=f}
+    if(rem.length>0){const rq=QUESTIONS.find(q=>q.id===qId);const ra=answers[idx];const ol=ra.label.replace(/^[^\s]*\s+/,'');
+      return{remaining:rem,message:`No exact club matched every preference, so we broadened your "${rq?.shortLabel||qId}" answer slightly (you chose "${ol}") to keep your recommendation strong.`}}
+  }
+  return null;
+}
+
+function selectNextQuestion(remaining,answers,askedIds,pathway){
+  if(remaining.length===2&&!askedIds.includes('final_choice'))return QUESTIONS.find(q=>q.id==='final_choice')||null;
+  if(answers.some(a=>a.questionId==='social_influence'&&a.answer==='yes_align')&&!askedIds.includes('social_team_pick')){
+    const sq=QUESTIONS.find(q=>q.id==='social_team_pick');if(sq&&isUseful(sq,remaining,answers))return sq}
+  if(!askedIds.includes('social_influence')&&remaining.length<=4&&answers.length>=2){const si=QUESTIONS.find(q=>q.id==='social_influence');if(si)return si}
+  const cands=QUESTIONS.filter(q=>{
+    if(['final_choice','social_influence','social_team_pick'].includes(q.id))return false;
+    if(askedIds.includes(q.id))return false;if(!isApplicable(q,answers))return false;if(!isUseful(q,remaining,answers))return false;return true});
+  if(!cands.length)return null;
+  const scored=cands.map(q=>({q,score:q.priority*2+q.tieBreakerStrength+(q.pathway===pathway?10:0)}));
+  scored.sort((a,b)=>b.score-a.score);return scored[0].q;
+}
+
+function generateExplanation(winner,runnerUp,answers){
+  const bullets=[];
+  for(const ans of answers){
+    const cl=ans.label.replace(/^[^\p{L}]*\s*/u,'').trim();
+    switch(ans.questionId){
+      case'colour_primary':if(ans.answer!=='none')bullets.push(`You gravitated toward ${cl.toLowerCase()} — a defining colour in ${winner.name}'s kit`);break;
+      case'colour_secondary':if(ans.answer!=='none')bullets.push(`Your preference for ${cl.toLowerCase()} as a second colour narrowed the field further`);break;
+      case'mascot_type':bullets.push(ans.answer==='animal'?`You wanted an animal mascot — ${winner.name} brings you the ${winner.mascotLabel}`:`You preferred a symbolic identity — the ${winner.nickname} fits that exactly`);break;
+      case'mascot_animal_class':bullets.push(`You chose the ${cl} — that points directly to ${winner.name}`);break;
+      case'geo_state':if(ans.answer!=='none')bullets.push(`Your ${cl} connection puts ${winner.name} right in the frame`);break;
+      case'geo_vic_type':if(ans.answer!=='none'){const lb=ans.answer==='metro'?'Melbourne metro clubs':'regional Victoria';bullets.push(`You preferred ${lb} — ${winner.name} fits that profile`)}break;
+      case'success_appetite':if(ans.answer!=='any'){const m={high:'a genuine premiership contender',medium:'a competitive, rising club',low:'an underdog to believe in'};bullets.push(`You wanted ${m[ans.answer]||ans.answer} — ${winner.name} delivers that`)}break;
+      case'success_recent':if(ans.answer==='yes')bullets.push(winner.recentPremiership?`Recent success matters to you — ${winner.name} are proven winners`:`You wanted recent success; ${winner.name} is the strongest remaining match`);break;
+      case'culture_size':if(ans.answer!=='any')bullets.push(`You wanted a ${cl.toLowerCase()} — ${winner.name}'s following matches that energy`);break;
+      case'culture_vibe':bullets.push(`"${cl}" describes ${winner.name}'s culture exactly`);break;
+      case'brand_style':if(ans.answer!=='none')bullets.push(`You leaned ${ans.answer==='traditional'?'toward heritage and tradition':'toward a modern identity'} — ${winner.name} is one of the AFL's most ${ans.answer} clubs`);break;
+      case'stadium_vibe':if(ans.answer!=='none')bullets.push(`Your game-day preference — ${cl.toLowerCase()} — is what ${winner.name} delivers`);break;
+      case'social_team_pick':bullets.push(`Your social connection to ${winner.name} was the decisive tie-breaker`);break;
+      case'final_choice':bullets.push(runnerUp?`In the final head-to-head you chose ${winner.name} over ${runnerUp.name}`:`You made the final call — ${winner.name} it is`);break;
+    }
+  }
+  if(!bullets.length)bullets.push(`${winner.name} best matched your overall profile across all the factors`);
+  return bullets;
+}
+
+function generateRunnerUpDiff(winner,runnerUp,answers){
+  for(let i=answers.length-1;i>=0;i--){
+    const ans=answers[i];const q=QUESTIONS.find(q=>q.id===ans.questionId);if(!q)continue;
+    const wIn=q.filter([winner,runnerUp],ans.answer,answers).some(t=>t.id===winner.id);
+    const rIn=q.filter([winner,runnerUp],ans.answer,answers).some(t=>t.id===runnerUp.id);
+    if(wIn&&!rIn){const cl=ans.label.replace(/^[^\p{L}]*\s*/u,'').trim();return`${winner.name} better matched your "${q.shortLabel}" answer (${cl.toLowerCase()})`}
+  }
+  const tier={high:3,medium:2,low:1};
+  if((tier[winner.successTier]||0)>(tier[runnerUp.successTier]||0))return`${winner.name} has a stronger recent success record`;
+  if(winner.recentPremiership&&!runnerUp.recentPremiership)return`${winner.name} has a more recent premiership`;
+  return`${winner.name} edged ${runnerUp.name} across the overall profile`;
+}
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state={screen:'landing',pathway:null,remaining:[...TEAMS],answers:[],askedIds:[],currentQuestion:null,result:null,relaxedMessage:null,pivotMessage:null};
+
+// ═══════════════════════════════════════════════
+// UI RENDERING
+// ═══════════════════════════════════════════════
+function switchScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// Landing dots
+(function(){const c=document.getElementById('teamDots');TEAMS.forEach(t=>{const d=document.createElement('div');d.className='dot';d.style.background=t.uiColors[0];d.title=t.name;c.appendChild(d)})})();
+
+// Pathway grid
+(function(){const g=document.getElementById('pathwayGrid');
+  PATHWAYS.forEach((p,i)=>{const btn=document.createElement('button');btn.className='pw-card anim-fade-up';btn.style.animationDelay=`${i*.06}s`;
+    btn.innerHTML=`<div class="emoji">${p.emoji}</div><div class="pw-label">${p.label}</div><div class="pw-desc">${p.desc}</div>`;
+    btn.onclick=()=>selectPathway(p.id);g.appendChild(btn)})})();
+
+function showPathway(){switchScreen('pathway')}
+
+function selectPathway(p){
+  const firstQId=PATHWAY_FIRST_Q[p];const q=QUESTIONS.find(q=>q.id===firstQId)||null;
+  state={screen:'question',pathway:p,remaining:[...TEAMS],answers:[],askedIds:[],currentQuestion:q,result:null,relaxedMessage:null,pivotMessage:null};
+  renderQuestion();switchScreen('question');
+}
+
+function renderQuestion(){
+  const q=state.currentQuestion;if(!q)return;
+  const pw=PATHWAYS.find(p=>p.id===state.pathway);
+
+  // Sidebar
+  document.getElementById('sidebarPathway').innerHTML=`<span class="sr-label">Starting with</span><span class="sr-value">${pw?.emoji||''} ${pw?.label||state.pathway}</span>`;
+  const sa=document.getElementById('sidebarAnswers');sa.innerHTML='';
+  state.answers.forEach(ans=>{const qq=QUESTIONS.find(q=>q.id===ans.questionId);const cl=ans.label.replace(/^[^\p{L}]*\s*/u,'').trim();
+    sa.innerHTML+=`<div class="sidebar-row"><span class="sr-label">${qq?.shortLabel||ans.questionId}</span><span class="sr-value">${cl}</span></div>`});
+  document.getElementById('remainCount').textContent=state.remaining.length;
+  document.getElementById('remainLabel').textContent=state.remaining.length===1?'Club left':'Clubs in play';
+  document.getElementById('progressFill').style.width=`${Math.min(state.answers.length/7,1)*100}%`;
+
+  // Question card
+  const options=getOptions(q,state.remaining,state.answers);
+  const isHH=q.isHeadToHead;
+  const isTwoOpt=options.length===2;
+  let html=`<div class="q-nav"><button onclick="goBack()">← Back</button><div class="spacer"></div><button onclick="doRestart()">Restart</button></div>`;
+  if(state.pivotMessage)html+=`<div class="pivot-msg">${state.pivotMessage}</div>`;
+  html+=`<p class="q-number">Question ${state.answers.length+1}</p>`;
+  html+=`<h2 class="q-label">${q.label}</h2>`;
+  html+=`<p class="q-desc">${q.description}</p>`;
+  html+=`<div class="answer-grid${(isTwoOpt||isHH)?' two-col':''}">`;
+  options.forEach(o=>{html+=`<button class="ans-btn" onclick="submitAnswer('${o.value.replace(/'/g,"\\'")}')"><span class="ans-label">${o.label}</span>${o.subtitle?`<span class="ans-sub">${o.subtitle}</span>`:''}</button>`});
+  html+=`</div>`;
+  const card=document.getElementById('qCard');card.innerHTML=html;
+  card.className='q-card anim-scale-in';void card.offsetWidth;
+}
+
+function submitAnswer(value){
+  const q=state.currentQuestion;if(!q)return;
+  const opts=getOptions(q,state.remaining,state.answers);
+  const opt=opts.find(o=>o.value===value);const label=opt?.label||value;
+  const newAnswer={questionId:q.id,answer:value,label};
+  const newAnswers=[...state.answers,newAnswer];const newAskedIds=[...state.askedIds,q.id];
+
+  let filtered=q.filter(state.remaining,value,state.answers);let relaxedMessage=null;
+  if(filtered.length===0){const rx=relaxConstraints(newAnswers);if(rx){filtered=rx.remaining;relaxedMessage=rx.message}else{filtered=state.remaining}}
+  const newRemaining=filtered.length>0?filtered:state.remaining;
+
+  state.answers=newAnswers;state.askedIds=newAskedIds;state.remaining=newRemaining;
+  if(relaxedMessage)state.relaxedMessage=relaxedMessage;
+
+  // Resolved to one
+  if(newRemaining.length===1){
+    const winner=newRemaining[0];const cands=resolveWinner(state.remaining.filter(t=>t.id!==winner.id));const runnerUp=cands[0]||null;
+    const explanation=generateExplanation(winner,runnerUp,newAnswers);const diff=runnerUp?generateRunnerUpDiff(winner,runnerUp,newAnswers):null;
+    state.result={winner,runnerUp,explanation,runnerUpDiff:diff};renderResult();switchScreen('result');return}
+
+  // Next question
+  const nextQ=selectNextQuestion(newRemaining,newAnswers,newAskedIds,state.pathway);
+  if(!nextQ){
+    const sorted=resolveWinner(newRemaining);const winner=sorted[0];const runnerUp=sorted[1]||null;
+    const explanation=generateExplanation(winner,runnerUp,newAnswers);const diff=runnerUp?generateRunnerUpDiff(winner,runnerUp,newAnswers):null;
+    state.result={winner,runnerUp,explanation,runnerUpDiff:diff};renderResult();switchScreen('result');return}
+
+  const curPw=q.pathway;const nextPw=nextQ.pathway;
+  state.pivotMessage=(nextPw!==curPw&&!['social','final'].includes(nextPw))?'A few clubs still fit your choices — let\'s narrow it down from a different angle.':null;
+  state.currentQuestion=nextQ;renderQuestion();
+}
+
+function goBack(){
+  if(state.answers.length===0){switchScreen('pathway');return}
+  const lastQId=state.askedIds[state.askedIds.length-1];
+  state.answers=state.answers.slice(0,-1);state.askedIds=state.askedIds.slice(0,-1);
+  state.remaining=replayFilters(state.answers);state.currentQuestion=QUESTIONS.find(q=>q.id===lastQId)||null;
+  state.relaxedMessage=null;state.pivotMessage=null;renderQuestion();
+}
+
+function doRestart(){
+  state={screen:'landing',pathway:null,remaining:[...TEAMS],answers:[],askedIds:[],currentQuestion:null,result:null,relaxedMessage:null,pivotMessage:null};
+  switchScreen('landing');
+}
+
+function renderResult(){
+  const{winner,runnerUp,explanation,runnerUpDiff}=state.result;
+  const[c1,c2]=winner.uiColors;
+  let html=`<div class="winner-hero anim-scale-in" style="background:linear-gradient(135deg,${c1} 0%,${c2} 100%)">
+    <div class="team-badge" style="width:80px;height:80px;font-size:20px;border-radius:11px;background:rgba(255,255,255,.12)">${winner.initials}</div>
+    <div class="winner-info"><h1>${winner.name}</h1><p class="nickname">${winner.nickname}</p><p class="summary">${winner.summary}</p></div></div>`;
+
+  html+=`<div class="why-card anim-fade-up" style="animation-delay:.1s"><p class="why-title">Why this team</p>`;
+  explanation.forEach(b=>{html+=`<div class="why-row"><span class="arrow">→</span><span class="bullet">${b}</span></div>`});
+  if(state.relaxedMessage)html+=`<div class="relaxed-row"><span class="tilde">~</span><span class="relaxed-text">${state.relaxedMessage}</span></div>`;
+  html+=`</div>`;
+
+  if(runnerUp){
+    html+=`<div class="runner-card anim-fade-up" style="animation-delay:.2s">
+      <div class="runner-info"><p class="ru-tag">Runner-up</p><p class="ru-name">${runnerUp.name}</p>${runnerUpDiff?`<p class="ru-diff">${runnerUpDiff}</p>`:''}</div>
+      <div class="team-badge" style="width:48px;height:48px;font-size:13px;border-radius:7px;background:linear-gradient(135deg,${runnerUp.uiColors[0]} 0%,${runnerUp.uiColors[1]} 100%)">${runnerUp.initials}</div></div>`;
+  }
+
+  html+=`<div class="cta-row anim-fade-up" style="animation-delay:.3s">
+    <button class="btn-primary" onclick="doRestart()">Try Again</button>
+    <button class="btn-secondary" onclick="changePathway()">Change Pathway</button></div>`;
+
+  document.getElementById('resultContent').innerHTML=html;
+}
+
+function changePathway(){
+  state={screen:'pathway',pathway:null,remaining:[...TEAMS],answers:[],askedIds:[],currentQuestion:null,result:null,relaxedMessage:null,pivotMessage:null};
+  switchScreen('pathway');
+}
+</script>
+</body>
+</html>
